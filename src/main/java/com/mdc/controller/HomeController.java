@@ -15,7 +15,7 @@ public class HomeController {
 
     List<String> empty = new ArrayList<>();
 
-//    @Autowired
+    @Autowired
     UserRepository userRepository;
 
     @RequestMapping("/")

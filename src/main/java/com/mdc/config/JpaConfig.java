@@ -24,11 +24,9 @@ import java.util.Properties;
 
 @Configuration
 @PropertySource("classpath:database.properties")
-@EnableJpaRepositories
+//in order to work with interface repository you need to tell the JPA the repository path
+@EnableJpaRepositories("com.mdc.repository")
 @EnableTransactionManagement
-@ComponentScan({
-        "com.mdc.repository"
-})
 public class JpaConfig {
 
 
