@@ -21,4 +21,11 @@ public class HomeController {
     public String  indexPage() {
         return "try";
     }
+
+    @RequestMapping("/addusers")
+    public String addUsers() {
+
+        return "ok";
+
+    }
 }
