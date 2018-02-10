@@ -46,12 +46,14 @@ public class HomeController {
     public String addUsers() {
 
         Set<RoleModel> roleModels = new HashSet<>();
-        PermissionModel permissionModel = permissionRepository.save(new PermissionModel().setName("read"));
+        permissionRepository.save(new PermissionModel().setName("read"));
+        PermissionModel permissionModel = permissionRepository.findByName("read");
 
         Set<PermissionModel> permissionModels = new HashSet<>();
         permissionModels.add(permissionModel);
 
-        RoleModel roleModel = roleRepository.save(new RoleModel().setPermissions(permissionModels).setName("ADMIN"));
+        roleRepository.save(new RoleModel().setPermissions(permissionModels).setName("ADMIN"));
+        RoleModel roleModel = roleRepository.findByName("ADMIN");
         roleModels.add(roleModel);
 
         UserModel user = new UserModel().setPassword("123").setUsername("user").setEmail("mdc@soft.ro");
