@@ -5,7 +5,6 @@ import org.apache.tomcat.dbcp.dbcp2.BasicDataSource;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
@@ -13,9 +12,11 @@ import org.springframework.dao.annotation.PersistenceExceptionTranslationPostPro
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.naming.NamingException;
@@ -29,9 +30,12 @@ import java.util.Properties;
 @EnableTransactionManagement
 public class JpaConfig {
 
+    private final Environment env;
 
     @Autowired
-    private Environment env;
+    public JpaConfig(Environment env) {
+        this.env = env;
+    }
 
 
     @Bean
@@ -44,11 +48,12 @@ public class JpaConfig {
     }
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory() throws NamingException {
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
         LocalContainerEntityManagerFactoryBean factoryBean = new LocalContainerEntityManagerFactoryBean();
         factoryBean.setDataSource(dataSource());
         factoryBean.setPackagesToScan("com.mdc.model");
         factoryBean.setJpaVendorAdapter(jpaVendorAdapter());
+        factoryBean.setPersistenceUnitName("myJpaPersistenceUnit");
         factoryBean.setJpaProperties(getHibernateProperties());
         return factoryBean;
     }
@@ -73,11 +78,9 @@ public class JpaConfig {
     }
 
     @Bean
-    @Autowired
-    public HibernateTransactionManager transactionManager(SessionFactory sessionFactory) {
-        HibernateTransactionManager txManager = new HibernateTransactionManager();
-        txManager.setSessionFactory(sessionFactory);
-        return txManager;
+    public PlatformTransactionManager transactionManager() {
+        return new JpaTransactionManager(entityManagerFactory().getObject());
+
     }
 
     @Bean
@@ -85,14 +88,13 @@ public class JpaConfig {
         return new PersistenceExceptionTranslationPostProcessor();
     }
 
+
     private Properties getHibernateProperties() {
         Properties hibernateProperties = new Properties();
-
         hibernateProperties.setProperty("hibernate.hbm2ddl.auto", env.getProperty("hibernate.hbm2ddl.auto"));
         hibernateProperties.setProperty("hibernate.dialect", env.getProperty("hibernate.dialect"));
-        hibernateProperties.setProperty("hibernate.globally_quoted_identifiers", env.getProperty("hibernate.globally_quoted_identifiers"));
-        hibernateProperties.setProperty("hibernate.dialect.storage_engine", env.getProperty("hibernate.dialect.storage_engine"));
-
+        hibernateProperties.setProperty("hibernate.show_sql", env.getProperty("hibernate.show_sql"));
+        hibernateProperties.setProperty("hibernate.format_sql", env.getProperty("hibernate.format_sql"));
         return hibernateProperties;
     }
 
